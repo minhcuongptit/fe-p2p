@@ -57,13 +57,22 @@ function App() {
   const handleDownload = (magnetURI) => {
     torrentClient.add(magnetURI, (torrent) => {
       torrent.files.forEach((file) => {
+        console.log("file", file)
+
         file.getBlobURL((err, url) => {
-          if (err) throw err
+          if (err) {
+            console.log("err", err)
+            throw err
+          }
+          console.log(url)
+
           setDownloadLink(url)
         })
       })
     })
   }
+
+  console.log("downloadLink", downloadLink)
 
   return (
     <div className="App">
