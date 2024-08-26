@@ -14,7 +14,7 @@ function App() {
 
   useEffect(() => {
     // Khởi tạo WebSocket và kết nối với signaling server
-    const websocket = new WebSocket("ws://be-p2p.onrender.com")
+    const websocket = new WebSocket("wss://be-p2p.onrender.com")
     setWs(websocket)
 
     websocket.onmessage = (message) => {
