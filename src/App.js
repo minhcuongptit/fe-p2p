@@ -2,12 +2,18 @@ import React, { useState, useEffect } from "react"
 import WebTorrent from "webtorrent/dist/webtorrent.min.js"
 
 function App() {
-  // Khởi tạo WebTorrent client với cấu hình tracker server
-  const [torrentClient] = useState(
-    new WebTorrent({
+  const [torrentClient, setTorrentClient] = useState(null)
+
+  useEffect(() => {
+    const client = new WebTorrent({
       tracker: ["wss://tracker.openwebtorrent.com"], // Thay thế bằng tracker server của bạn nếu cần
     })
-  )
+
+    setTorrentClient(client)
+
+    // Clean up on unmount
+    return () => client.destroy()
+  }, [])
   const [torrentLink, setTorrentLink] = useState("")
   const [downloadLink, setDownloadLink] = useState("")
   const [ws, setWs] = useState(null)
@@ -56,19 +62,25 @@ function App() {
 
   const handleDownload = (magnetURI) => {
     console.log("magnetURI", magnetURI)
+
     torrentClient.add(magnetURI, (torrent) => {
+      console.log("torrent", torrent)
+
       torrent.files.forEach((file) => {
         console.log("file", file)
 
-        file.getBlobURL((err, url) => {
-          if (err) {
-            console.log("err", err)
-            throw err
-          }
-          console.log(url)
+        // Create a read stream from the file
+        const readStream = file.createReadStream()
 
+        // Convert the read stream to a blob URL
+        const reader = new FileReader()
+        reader.onload = function () {
+          const blob = new Blob([reader.result], { type: file.mimeType })
+          const url = URL.createObjectURL(blob)
+          console.log(url)
           setDownloadLink(url)
-        })
+        }
+        reader.readAsArrayBuffer(readStream)
       })
     })
   }
@@ -78,7 +90,6 @@ function App() {
   return (
     <div className="App">
       <h1>P2P File Sharing</h1>
-
       <input type="file" onChange={handleFileUpload} />
       {torrentLink && (
         <div>
@@ -86,21 +97,18 @@ function App() {
           <p>{torrentLink}</p>
         </div>
       )}
-
       <input
         type="text"
         placeholder="Enter magnet link to download"
         onChange={(e) => handleDownload(e.target.value)}
       />
 
-      {downloadLink && (
-        <div>
-          <h2>Download your file:</h2>
-          <a href={downloadLink} download>
-            Download File
-          </a>
-        </div>
-      )}
+      <div>
+        <h2>Download your file:</h2>
+        <a href={downloadLink} download>
+          Download File {downloadLink}
+        </a>
+      </div>
     </div>
   )
 }
