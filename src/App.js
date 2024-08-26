@@ -14,7 +14,19 @@ function App() {
 
   useEffect(() => {
     // Khởi tạo WebSocket và kết nối với signaling server
+    // const websocket = new WebSocket("ws://localhost:8080")
     const websocket = new WebSocket("wss://be-p2p.onrender.com")
+
+    // Xử lý khi kết nối thành công
+    websocket.onopen = () => {
+      console.log("WebSocket Client Connected")
+    }
+
+    // Xử lý khi có lỗi xảy ra
+    websocket.onerror = (error) => {
+      console.error("WebSocket Error:", error)
+    }
+
     setWs(websocket)
 
     websocket.onmessage = (message) => {
