@@ -55,6 +55,7 @@ function App() {
   }
 
   const handleDownload = (magnetURI) => {
+    console.log("magnetURI", magnetURI)
     torrentClient.add(magnetURI, (torrent) => {
       torrent.files.forEach((file) => {
         console.log("file", file)
